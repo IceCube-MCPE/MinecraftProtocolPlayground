@@ -10,37 +10,45 @@ import static mc.icecube.framework.utils.LittleEndian.fromLE;
 import static mc.icecube.framework.utils.LittleEndian.toLE;
 
 public class LittleEndianTypes {
-    public static String readStringAscii(DataInputStream stream, int lenBytes) throws IOException {
-        byte[] lenBytesArray = new byte[lenBytes];
-        stream.readFully(lenBytesArray);
-        int length = (int) fromLE(lenBytesArray);
-        byte[] strBytes = new byte[length];
-        stream.readFully(strBytes);
-        return new String(strBytes, StandardCharsets.US_ASCII);
-    }
+    // uint16
     public static int readShortLE(DataInputStream stream) throws IOException {
         return (int) fromLE(readBytes(stream, 2));
     }
+    // uint24
+    public static int readTriadLE(DataInputStream dataInputStream) throws IOException {
+        return (int) fromLE(readBytes(dataInputStream, 3));
+    }
+    // uint32
     public static int readIntLE(DataInputStream stream) throws IOException {
         return (int) fromLE(readBytes(stream, 4));
     }
-    public static void writeStringAscii(ByteArrayOutputStream stream, String str, int lenBytes) throws IOException {
-        byte[] strBytes = str.getBytes(StandardCharsets.US_ASCII);
-        byte[] len = toLE(strBytes.length, lenBytes);
-        stream.write(len);
-        stream.write(strBytes);
+    // write uint32
+    public static void writeIntLE(ByteArrayOutputStream stream, int intToWrite) throws IOException {
+        stream.write(toLE(intToWrite, 4));
     }
+    // length prefixed string: length (uint32) + bytes
+    // read bytes by readed length and convert it to string
+    // if length 1 you read 1 byte more after length and covert this byte to string
     public static String readStringUTF8(DataInputStream stream) throws IOException {
         int length = readIntLE(stream);
         byte[] strBytes = new byte[length];
         stream.readFully(strBytes);
         return new String(strBytes, StandardCharsets.UTF_8);
     }
-    public static void writeStringUTF8(ByteArrayOutputStream stream, String str, int lenBytes) throws IOException {
+    // length prefixed string
+    // same thing, we encode string length + string (in bytes)
+    public static void writeStringUTF8(ByteArrayOutputStream stream, String str) throws IOException {
         byte[] strBytes = str.getBytes(StandardCharsets.UTF_8);
-        byte[] len = toLE(strBytes.length, lenBytes);
-        stream.write(len);
+        writeIntLE(stream, str.length());
         stream.write(strBytes);
+    }
+    // float (8 bytes)
+    public static float readFloatLE(DataInputStream dataInputStream) throws IOException {
+        return (float) fromLE(readBytes(dataInputStream, 4));
+    }
+    // double (8 bytes)
+    public static double readDoubleLE(DataInputStream dataInputStream) throws IOException {
+        return (double) fromLE(readBytes(dataInputStream, 8));
     }
 
 }

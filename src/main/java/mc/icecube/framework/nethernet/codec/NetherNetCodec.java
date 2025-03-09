@@ -77,11 +77,11 @@ public class NetherNetCodec {
         }
         h.write(LittleEndian.toLE(packet.transport_layer, 4));
         String hexString = Hexer.bytesToHex(h.toByteArray());
-        LittleEndianTypes.writeStringAscii(p, hexString, 4);
+        LittleEndianTypes.writeStringUTF8(p, hexString);
     }
     private static void encodeDiscoveryMessagePacket(ByteArrayOutputStream p, DiscoveryMessagePacket packet) throws IOException {
         p.write(LittleEndian.toLE(packet.recipient_id, 8));
-        LittleEndianTypes.writeStringUTF8(p, packet.data, 4);
+        LittleEndianTypes.writeStringUTF8(p, packet.data);
     }
 
     public static DiscoveryPacket nethernetDecode(byte[] packet) {
@@ -111,7 +111,7 @@ public class NetherNetCodec {
             if (type == 0) {
                 return new DiscoveryRequestPacket(senderId);
             } else if (type == 1) {
-                String hexData = LittleEndianTypes.readStringAscii(dis, 4);
+                String hexData = LittleEndianTypes.readStringUTF8(dis);
                 byte[] dataBytes = Hexer.hexToBytes(hexData);
                 DataInputStream dataDis = new DataInputStream(new ByteArrayInputStream(dataBytes));
                 int version = dataDis.readUnsignedByte();
